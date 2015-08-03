@@ -5,14 +5,13 @@ use Stratedge\Runcard\Traits\Nesting;
 
 class Middleware
 {
-    use Nesting;
+    // use Nesting;
 
     protected $value;
 
-    public function __construct($value, $nesting = 0)
+    public function __construct($value)
     {
         $this->setValue($value);
-        $this->setNesting($nesting);
     }
 
     public function getValue()
@@ -38,7 +37,7 @@ class Middleware
             $output = $this->buildValue();
         }
 
-        return $this->formatNesting($output);
+        return $output;
     }
 
     public function buildPlaceholder()

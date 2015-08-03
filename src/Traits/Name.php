@@ -21,8 +21,6 @@ trait Name
             return null;
         }
 
-        $output = "->setName('{$this->getName()}')";
-
-        return $this->hasCallable() ? str_pad('', 4, ' ') . $output : $output;
+        return "->setName('{$this->getName()}')";
     }
 }

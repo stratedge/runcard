@@ -2,14 +2,13 @@
 namespace Stratedge\Runcard;
 
 use Stratedge\Runcard\Traits\Middleware as MW;
-use Stratedge\Runcard\Traits\Name;
-use Stratedge\Runcard\Traits\Nesting;
+use Stratedge\Runcard\Traits\Indent;
 use Stratedge\Runcard\Traits\Uri;
 
 class Group
 {
     use Uri;
-    use Nesting;
+    use Indent;
     use MW;
 
     protected $children;
@@ -29,8 +28,6 @@ class Group
                 $this->addMiddleware($middleware);
             }
         }
-
-        $this->setNesting($nesting);
     }
 
     public function getChildren()
@@ -45,20 +42,53 @@ class Group
 
     public function __toString()
     {
-        $children = implode("\n\n", $this->getChildren());
+        $children = $this->buildChildren();
+
+        foreach ($children as &$child) {
+            $child = $this->indent($child, 4);
+        }
+
+        $middleware = $this->buildMiddleware();
+
+        if (count($middleware) > 1) {
+            $first = array_shift($middleware);
+
+            foreach ($middleware as &$mw) {
+                $mw = $this->indent($mw, 2);
+            }
+
+            array_unshift($middleware, $first);
+        }
+
+        $middleware = implode("\n", $middleware);
 
         $output = $this->buildGroup($children);
-        $output .= $this->buildMiddleware();
+        $output .= $middleware;
         $output .= ';';
 
-        return $this->formatNesting($output);
+        return $output;
+    }
+
+    public function buildChildren()
+    {
+        $children = [];
+
+        foreach ($this->getChildren() as $child) {
+            $children[] = '$this' . $child->forGroup();
+        }
+
+        return $children;
     }
 
     public function buildGroup($children)
     {
+        $children = implode("\n\n\n", $children);
+
         return <<<"EOT"
-\$app->group('{$this->getUri()}', function () {
+->group('{$this->getUri()}', function () {
+
 $children
+
 })
 EOT;
     }

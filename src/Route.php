@@ -3,18 +3,19 @@ namespace Stratedge\Runcard;
 
 use Stratedge\Runcard\Traits\Middleware as MW;
 use Stratedge\Runcard\Traits\Name;
-use Stratedge\Runcard\Traits\Nesting;
+use Stratedge\Runcard\Traits\Indent;
 use Stratedge\Runcard\Traits\Uri;
 
 class Route
 {
     use Uri;
     use Name;
-    use Nesting;
+    use Indent;
     use MW;
 
     protected $method;
     protected $callable;
+    protected $for_group = false;
 
     public function __construct($data, $nesting = 0)
     {
@@ -42,8 +43,6 @@ class Route
                 );
             } 
         }
-
-        $this->setNesting($nesting);
     }
 
     public function getMethod()
@@ -71,18 +70,43 @@ class Route
         $this->callable = $callable;
     }
 
+    public function getForGroup()
+    {
+        return $this->for_group;
+    }
+
+    public function setForGroup($bool = false)
+    {
+        $this->for_group = $bool;
+    }
+
+    public function forGroup()
+    {
+        $this->setForGroup(true);
+        return $this;
+    }
+
     public function __toString()
     {
         $route = $this->buildRoute();
+
         $middleware = $this->buildMiddleware();
-        $name = $this->buildName();
         
-        $parts = array_filter([$route, $middleware, $name]);
+        $name = $this->buildName();
+
+        $post_pieces = array_merge($middleware, [$name]);
+        $post_pieces = array_filter($post_pieces);
+
+        if (count($post_pieces) > 0) {
+            $post_pieces = $this->formatPostPieces($post_pieces);
+        }
+
+        $parts = array_filter([$route, implode("\n", $post_pieces)]);
 
         $output = implode($this->hasCallable() ? "\n" : null, $parts);
         $output .= ';';
         
-        return $this->formatNesting($output);
+        return $output;
     }
 
     public function buildRoute()
@@ -94,10 +118,37 @@ class Route
         }
     }
 
+    public function formatPostPieces($post_pieces)
+    {
+        if ($this->hasCallable() == false) {
+            $first = array_shift($post_pieces);
+        }
+
+        if ($this->hasCallable() == true) {
+            if ($this->getForGroup() == true) {
+                $indent = 5;
+            } else {
+                $indent = 4;
+            }
+        } else {
+            $indent = 2;
+        }
+
+        foreach ($post_pieces as &$piece) {
+            $piece = $this->indent($piece, $indent);
+        }
+
+        if ($this->hasCallable() == false) {
+            array_unshift($post_pieces, $first);
+        }
+
+        return $post_pieces;
+    }
+
     public function buildPlaceholder()
     {
         return <<<"EOT"
-\$app->{$this->getMethod()}('{$this->getURI()}', function (\$request, \$response, \$args) {
+->{$this->getMethod()}('{$this->getURI()}', function (\$request, \$response, \$args) {
     //Add route functionality here
     return \$response;
 })
@@ -107,7 +158,7 @@ EOT;
     public function buildCallable()
     {
         return <<<"EOT"
-\$app->{$this->getMethod()}('{$this->getURI()}', {$this->getCallable()})
+->{$this->getMethod()}('{$this->getURI()}', {$this->getCallable()})
 EOT;
     }
 }

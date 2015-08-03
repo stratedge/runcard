@@ -58,11 +58,11 @@ class Build extends Command
          */
         foreach ($data['routes'] as $route_data) {
             $obj = Factory::create($route_data);
-            $output[] = (string) $obj;
+            $output[] = (string) '$app' . $obj;
         }
 
         $path = $dir . DIRECTORY_SEPARATOR . 'routes.php';
 
-        file_put_contents($path, "<?php\n\n" . implode("\n\n", $output) . "\n");
+        file_put_contents($path, "<?php\n\n" . implode("\n\n\n\n", $output) . "\n");
     }
 }

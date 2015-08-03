@@ -12,13 +12,19 @@ trait Middleware
         return $this->middleware;
     }
 
-    public function addMiddleware($data, $nesting = 0)
+    public function addMiddleware($data)
     {
-        $this->middleware[] = Factory::createMiddleware($data, $nesting);
+        $this->middleware[] = Factory::createMiddleware($data);
     }
 
     public function buildMiddleware()
     {
-        return implode($this->getMiddleware());
+        $middleware = [];
+
+        foreach ($this->getMiddleware() as $mw) {
+            $middleware[] = (string) $mw;
+        }
+
+        return $middleware;
     }
 }
