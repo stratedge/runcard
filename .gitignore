@@ -2,9 +2,9 @@ composer.phar
 vendor/
 vagrant/.vagrant
 html
-runcard.yml
-runcard.json
-runcard.php
+/runcard.yml
+/runcard.json
+/runcard.php
 routes.php
 
 # Commit your application's lock file http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file
