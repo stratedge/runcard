@@ -48,7 +48,7 @@ class Build extends Command
             $middleware = [];
             foreach ($data['middleware'] as $middleware_data) {
                 $obj = Factory::createMiddleware($middleware_data);
-                $middleware[] = '$app' . $obj;
+                $middleware[] = '$app' . $obj . ';';
             }
             $output[] = implode("\n", $middleware);
         }
