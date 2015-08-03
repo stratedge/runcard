@@ -1,0 +1,42 @@
+{
+    "name": "stratedge/runcard",
+    "description": "A command-line-utility for creating a Slim3 route file from a YAML, JSON, or PHP configuration file",
+    "type": "library",
+    "keywords": [
+        "slim",
+        "slim3",
+        "cli",
+        "route",
+        "routes",
+        "routing"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jarret Byrne",
+            "email": "jarret@solvomedia.com",
+            "homepage": "http://jarretbyrne.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/stratedge/runcard/issues",
+        "source": "https://github.com/stratedge/runcard"
+    },
+    "require": {
+        "symfony/console": "^2.7",
+        "symfony/yaml": "^2.7",
+        "symfony/config": "^2.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Stratedge\\Runcard\\": "src/"
+        }
+    },
+    "bin": [
+        "bin/runcard"
+    ],
+    "require-dev": {
+        "raveren/kint": "^1.0"
+    }
+}
