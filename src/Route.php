@@ -1,24 +1,22 @@
 <?php
 namespace Stratedge\Runcard;
 
-use Stratedge\Runcard\Traits\Middleware as MW;
-use Stratedge\Runcard\Traits\Name;
-use Stratedge\Runcard\Traits\Indent;
-use Stratedge\Runcard\Traits\Uri;
-
 class Route
 {
-    use Uri;
-    use Name;
-    use Indent;
-    use MW;
+    use \Stratedge\Runcard\Traits\Indent;
+    use \Stratedge\Runcard\Traits\Middleware;
+    use \Stratedge\Runcard\Traits\Name;
+    use \Stratedge\Runcard\Traits\ParseTemplate;
+    use \Stratedge\Runcard\Traits\Uri;
 
     protected $method;
     protected $callable;
     protected $for_group = false;
 
-    public function __construct($data, $nesting = 0)
+    public function __construct($data)
     {
+        $this->setTemplatePath(__DIR__ . '/Templates/');
+
         if (!empty($data['uri'])) {
             $this->setUri($data['uri']);
         }
@@ -29,6 +27,8 @@ class Route
 
         if (!empty($data['callable'])) {
             $this->addCallable($data['callable']);
+        } else {
+            $this->addCallable(null);
         }
 
         if (!empty($data['name'])) {
@@ -59,7 +59,7 @@ class Route
 
     public function hasCallable()
     {
-        return !is_null($this->getCallable());
+        return !is_null($this->getCallable()->getInvokable());
     }
 
     public function addCallable($callable)
@@ -87,32 +87,40 @@ class Route
     {
         $route = $this->buildRoute();
 
-        $middleware = $this->buildMiddleware();
-        
-        $name = $this->buildName();
+        $post_route = $this->buildPostRoute();
 
-        $post_pieces = array_merge($middleware, [$name]);
-        $post_pieces = array_filter($post_pieces);
+        $parts = array_filter([$route, implode("\n", $post_route)]);
 
-        if (count($post_pieces) > 0) {
-            $post_pieces = $this->formatPostPieces($post_pieces);
-        }
+        $glue = $this->hasCallable() ? "\n" : null;
 
-        $parts = array_filter([$route, implode("\n", $post_pieces)]);
-
-        $output = implode($this->hasCallable() ? "\n" : null, $parts);
-        $output .= ';';
+        $output = implode($glue, $parts) . ';';
         
         return $output;
     }
 
     public function buildRoute()
     {
-        if ($this->hasCallable() === false) {
-            return $this->buildPlaceholder();
-        } else {
-            return $this->buildCallable();
+        return $this->parseTemplate('route.structure.tpl', [
+            '$method' => $this->getMethod(),
+            '$uri' => $this->getURI(),
+            '$callable' => $this->getCallable()
+        ]);
+    }
+
+    public function buildPostRoute()
+    {
+        $post = array_filter(
+            array_merge(
+                $this->buildMiddleware(),
+                (array) $this->buildName()
+            )
+        );
+
+        if (empty($post)) {
+            return $post;
         }
+
+        return $this->formatPostPieces($post);
     }
 
     public function formatPostPieces($post_pieces)
@@ -140,22 +148,5 @@ class Route
         }
 
         return $post_pieces;
-    }
-
-    public function buildPlaceholder()
-    {
-        return <<<"EOT"
-->{$this->getMethod()}('{$this->getURI()}', function (\$request, \$response, \$args) {
-    //Add route functionality here
-    return \$response;
-})
-EOT;
-    }
-
-    public function buildCallable()
-    {
-        return <<<"EOT"
-->{$this->getMethod()}('{$this->getURI()}', {$this->getCallable()})
-EOT;
     }
 }

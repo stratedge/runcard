@@ -1,0 +1,5 @@
+->group('$uri', function () {
+
+$children
+
+})

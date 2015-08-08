@@ -1,20 +1,20 @@
 <?php
 namespace Stratedge\Runcard;
 
-use Stratedge\Runcard\Traits\Middleware as MW;
-use Stratedge\Runcard\Traits\Indent;
-use Stratedge\Runcard\Traits\Uri;
-
 class Group
 {
-    use Uri;
-    use Indent;
-    use MW;
+
+    use \Stratedge\Runcard\Traits\Indent;
+    use \Stratedge\Runcard\Traits\Middleware;
+    use \Stratedge\Runcard\Traits\ParseTemplate;
+    use \Stratedge\Runcard\Traits\Uri;
 
     protected $children;
 
     public function __construct($data, $nesting = 0)
     {
+        $this->setTemplatePath(__DIR__ . '/Templates/');
+
         if (!empty($data['uri'])) {
             $this->setUri($data['uri']);
         }
@@ -42,12 +42,6 @@ class Group
 
     public function __toString()
     {
-        $children = $this->buildChildren();
-
-        foreach ($children as &$child) {
-            $child = $this->indent($child, 4);
-        }
-
         $middleware = $this->buildMiddleware();
 
         if (count($middleware) > 1) {
@@ -62,7 +56,7 @@ class Group
 
         $middleware = implode("\n", $middleware);
 
-        $output = $this->buildGroup($children);
+        $output = $this->buildGroup();
         $output .= $middleware;
         $output .= ';';
 
@@ -74,22 +68,19 @@ class Group
         $children = [];
 
         foreach ($this->getChildren() as $child) {
-            $children[] = '$this' . $child->forGroup();
+            $children[] = $this->indent(
+                '$this' . $child->forGroup(),
+                4
+            );
         }
 
-        return $children;
+        return implode("\n\n", $children);
     }
 
-    public function buildGroup($children)
+    public function buildGroup()
     {
-        $children = implode("\n\n", $children);
-
-        return <<<"EOT"
-->group('{$this->getUri()}', function () {
-
-$children
-
-})
-EOT;
+        return $this->parseTemplate('group.structure.tpl', [
+            '$children' => $this->buildChildren()
+        ]);
     }
 }
