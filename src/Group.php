@@ -82,7 +82,7 @@ class Group
 
     public function buildGroup($children)
     {
-        $children = implode("\n\n\n", $children);
+        $children = implode("\n\n", $children);
 
         return <<<"EOT"
 ->group('{$this->getUri()}', function () {

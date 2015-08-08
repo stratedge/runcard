@@ -26,7 +26,9 @@ class Build extends Command
 
         $data = $yaml->parse(file_get_contents($path));
 
-        $output = [];
+        $includes = [];
+        $middleware = [];
+        $routes = [];
 
         /*
          * BUILD REQUIRE AND INCLUDE STATEMENTS
@@ -37,7 +39,7 @@ class Build extends Command
                 foreach ($data[$command] as $part) {
                     $parts[] = "$command '$part';";
                 };
-                $output[] = implode("\n", $parts);
+                $includes[] = implode("\n", $parts);
             }
         }
 
@@ -45,12 +47,12 @@ class Build extends Command
          * BUILD APPLICATION MIDDLEWARE
          */
         if (!empty($data['middleware'])) {
-            $middleware = [];
+            $mw = [];
             foreach ($data['middleware'] as $middleware_data) {
                 $obj = Factory::createMiddleware($middleware_data);
-                $middleware[] = '$app' . $obj . ';';
+                $mw[] = '$app' . $obj . ';';
             }
-            $output[] = implode("\n", $middleware);
+            $middleware[] = implode("\n", $mw);
         }
 
         /*
@@ -58,11 +60,26 @@ class Build extends Command
          */
         foreach ($data['routes'] as $route_data) {
             $obj = Factory::create($route_data);
-            $output[] = (string) '$app' . $obj;
+            $routes[] = (string) '$app' . $obj;
         }
 
-        $path = $dir . DIRECTORY_SEPARATOR . 'routes.php';
+        $output = [];
 
-        file_put_contents($path, "<?php\n\n" . implode("\n\n\n\n", $output) . "\n");
+        if (!empty($includes)) {
+            $output[] = "/**\n * INCLUDES\n */\n" . implode("\n", $includes);
+        }
+
+        if (!empty($middleware)) {
+            $output[] = "/**\n * APPLICATION MIDDLEWARE\n */\n" . implode("\n", $middleware);
+        }
+
+        if (!empty($routes)) {
+            $output[] = "/**\n * ROUTES\n */\n" . implode("\n\n", $routes);
+        }
+
+
+        $path = $data['output'] ?: $dir . DIRECTORY_SEPARATOR . 'routes.php';
+
+        file_put_contents($path, "<?php\n\n" . implode("\n\n\n", $output) . "\n");
     }
 }
