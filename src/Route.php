@@ -28,7 +28,7 @@ class Route
         }
 
         if (!empty($data['callable'])) {
-            $this->setCallable($data['callable']);
+            $this->addCallable($data['callable']);
         }
 
         if (!empty($data['name'])) {
@@ -37,10 +37,7 @@ class Route
 
         if (!empty($data['middleware'])) {
             foreach ($data['middleware'] as $middleware) {
-                $this->addMiddleware(
-                    $middleware,
-                    $this->hasCallable() ? 1 : 0
-                );
+                $this->addMiddleware($middleware);
             } 
         }
     }
@@ -65,9 +62,9 @@ class Route
         return !is_null($this->getCallable());
     }
 
-    public function setCallable($callable)
+    public function addCallable($callable)
     {
-        $this->callable = $callable;
+        $this->callable = Factory::createCallable($callable);
     }
 
     public function getForGroup()

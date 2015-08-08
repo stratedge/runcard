@@ -4,6 +4,7 @@ namespace Stratedge\Runcard;
 use Stratedge\Runcard\Group;
 use Stratedge\Runcard\Middleware;
 use Stratedge\Runcard\Route;
+use Stratedge\Runcard\RouteCallable;
 
 class Factory
 {
@@ -19,5 +20,10 @@ class Factory
     public static function createMiddleware($data, $nesting = 0)
     {
         return new Middleware($data, $nesting);
+    }
+
+    public static function createCallable($data)
+    {
+        return new RouteCallable($data);
     }
 }
