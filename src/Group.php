@@ -80,6 +80,7 @@ class Group
     public function buildGroup()
     {
         return $this->parseTemplate('group.structure.tpl', [
+            '$uri' => $this->getURI(),
             '$children' => $this->buildChildren()
         ]);
     }
