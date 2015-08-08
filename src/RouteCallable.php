@@ -15,16 +15,38 @@ class RouteCallable
                 is_string($callable['class']) == true &&
                 is_string($callable['method']) == true
             ) {
-                //Explictly set callable by class and method
-                $this->setCallable($callable['class'], $callable['method']);
+                //Class-type callable, class will be in quotes
+                $this->setCallableClass($callable['class'], $callable['method']);
+            } else if (
+                isset($callable['object']) == true &&
+                isset($callable['method']) == true &&
+                is_string($callable['object']) == true &&
+                is_string($callable['method']) == true
+            ) {
+                //Object-type callable, class will not be in quotes
+                $this->setCallableObject($callable['object'], $callable['method']);
+            } else if (
+                isset($callable['static']) == true &&
+                isset($callable['method']) == true &&
+                is_string($callable['static']) == true &&
+                is_string($callable['method']) == true
+            ) {
+                //Static-type callable, class and method together in one string in quotes
+                $this->setCallableStatic($callable['static'], $callable['method']);
             } else if (
                 isset($callable[0]) == true &&
                 isset($callable[1]) == true &&
                 is_string($callable[0]) == true &&
                 is_string($callable[1]) == true
             ) {
-                //Numerically indexed array
-                $this->setCallable($callable[0], $callable[1]);
+                //Numerically-keyed array, assume an object-type callable
+                $this->setCallableObject($callable[0], $callable[1]);
+            } else if (
+                isset($callable['function']) == true &&
+                is_string($callable['function']) == true
+            ) {
+                //Function-type callable, whole thing in quotes
+                $this->setCallableFunction($callable['function']);
             } else {
                 //Problem!
             }
@@ -41,13 +63,42 @@ class RouteCallable
         return $this->callable;
     }
 
-    public function setCallable($callable, $method = null)
+    protected function setCallable($callable/*, $method = null*/)
     {
-        if (!is_null($method)) {
-            $this->callable = "[$callable, '$method']";
-        } else {
-            $this->callable = $callable;
-        }
+        return $this->callable = $callable;
+    }
+
+    public function setCallableClass($class, $method)
+    {
+        $this->setCallable(
+            "['$class', '$method']"
+        );
+    }
+
+    public function setCallableObject($object, $method)
+    {
+        $this->setCallable(
+            "[$object, '$method']"
+        );
+    }
+
+    public function setCallableStatic($static, $method)
+    {
+        $this->setCallable(
+            "'$static::$method'"
+        );
+    }
+
+    public function setCallableString($string)
+    {
+        $this->setCallable(
+            "'$string'"
+        );
+    }
+
+    public function setCallableFunction($function)
+    {
+        $this->setCallableString($function);
     }
 
     public function __toString()
