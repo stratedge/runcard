@@ -77,8 +77,11 @@ class Build extends Command
             $output[] = "/**\n * ROUTES\n */\n" . implode("\n\n", $routes);
         }
 
-
-        $path = $data['output'] ?: $dir . DIRECTORY_SEPARATOR . 'routes.php';
+        if (!empty($data['output'])) {
+            $path = $data['output'];
+        } else {
+            $path = $dir . DIRECTORY_SEPARATOR . 'routes.php';
+        } 
 
         file_put_contents($path, "<?php\n\n" . implode("\n\n\n", $output) . "\n");
     }
