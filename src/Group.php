@@ -11,7 +11,7 @@ class Group
 
     protected $children;
 
-    public function __construct($data, $nesting = 0)
+    public function __construct($data)
     {
         $this->setTemplatePath(__DIR__ . '/Templates/');
 
@@ -19,10 +19,20 @@ class Group
             $this->setUri($data['uri']);
         }
 
+        //@todo Throw exception if routes property is not set or empty
+        
+        $inheritable_data = [];
+
+        if (!empty($data['callable'])) {
+            $inheritable_data['callable'] = $data['callable'];
+        }
+        
+        //Attach each child route or group to this group
         foreach ($data['routes'] as $route_data) {
-            $this->addChild($route_data);
+            $this->addChild(array_merge_recursive($inheritable_data, $route_data));
         }
 
+        //Attach each middleware to this group
         if (!empty($data['middleware'])) {
             foreach($data['middleware'] as $middleware) {
                 $this->addMiddleware($middleware);
@@ -37,7 +47,7 @@ class Group
 
     public function addChild($data)
     {
-        $this->children[] = Factory::create($data, 1);
+        $this->children[] = Factory::create($data);
     }
 
     public function __toString()

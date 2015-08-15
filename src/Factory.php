@@ -8,18 +8,18 @@ use Stratedge\Runcard\RouteCallable;
 
 class Factory
 {
-    public static function create($data, $nesting = 0)
+    public static function create($data)
     {
         if (!empty($data['routes'])) {
-            return new Group($data, $nesting);
+            return new Group($data);
         } else {
-            return new Route($data, $nesting);
+            return new Route($data);
         }
     }
 
-    public static function createMiddleware($data, $nesting = 0)
+    public static function createMiddleware($data)
     {
-        return new Middleware($data, $nesting);
+        return new Middleware($data);
     }
 
     public static function createCallable($data)
