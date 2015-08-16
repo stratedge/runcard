@@ -3,6 +3,7 @@ namespace Stratedge\Runcard;
 
 class Route
 {
+    use \Stratedge\Runcard\Traits\ForGroup;
     use \Stratedge\Runcard\Traits\Indent;
     use \Stratedge\Runcard\Traits\Middleware;
     use \Stratedge\Runcard\Traits\Name;
@@ -11,7 +12,6 @@ class Route
 
     protected $method;
     protected $callable;
-    protected $for_group = false;
 
     public function __construct($data)
     {
@@ -65,22 +65,6 @@ class Route
     public function addCallable($callable)
     {
         $this->callable = Factory::createCallable($callable);
-    }
-
-    public function getForGroup()
-    {
-        return $this->for_group;
-    }
-
-    public function setForGroup($bool = false)
-    {
-        $this->for_group = $bool;
-    }
-
-    public function forGroup()
-    {
-        $this->setForGroup(true);
-        return $this;
     }
 
     public function __toString()

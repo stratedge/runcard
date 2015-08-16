@@ -3,7 +3,7 @@ namespace Stratedge\Runcard;
 
 class Group
 {
-
+    use \Stratedge\Runcard\Traits\ForGroup;
     use \Stratedge\Runcard\Traits\Indent;
     use \Stratedge\Runcard\Traits\Middleware;
     use \Stratedge\Runcard\Traits\ParseTemplate;
